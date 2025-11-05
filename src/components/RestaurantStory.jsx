@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
- 
+import { useCustomization } from '../context/CustomizationContext';
+import { useToast } from '../context/ToastContext';
+import {useNetworkStatus} from '../hooks/useNetworkStatus';
 import { useProgress } from '../hooks/useProgress';
 import { useMediaNavigation } from '../hooks/useMediaNavigation';
 import { useIngredientCard } from '../hooks/useIngredientCard';
@@ -11,8 +13,11 @@ import IngredientCard from './IngredientCard';
 import ActionButtons from './ActionButtons';
 
 const RestaurantStory = ({ restaurant }) => {
-  const { addToCart } = useCart();
+  const { addToCart, removeCartItemById } = useCart();
+  const { showToast } = useToast();
+  const isOnline = useNetworkStatus();
   const [currentDishIndex, setCurrentDishIndex] = useState(0);
+  const [isMediaLoaded, setIsMediaLoaded] = useState(false);
   const videoRef = useRef(null);
   const savedProgressRef = useRef(0);
 
@@ -93,6 +98,11 @@ const RestaurantStory = ({ restaurant }) => {
   // Store pauseProgress function in ref so ingredient card can use it
   pauseProgressRef.current = pauseProgressHook;
 
+  // Reset media loaded state when dish changes
+  useEffect(() => {
+    setIsMediaLoaded(false);
+  }, [currentDishIndex]);
+
   // Auto-advance when progress completes
   useEffect(() => {
     if (progress >= 100 && !isProgressPaused) {
@@ -101,6 +111,8 @@ const RestaurantStory = ({ restaurant }) => {
       }
     }
   }, [progress, currentDishIndex, restaurant.stories.length, isProgressPaused]);
+
+  const { getDishCustomizations, clearDishCustomizations } = useCustomization();
 
   // Handler for Customize button
   const handleCustomize = () => {
@@ -111,16 +123,38 @@ const RestaurantStory = ({ restaurant }) => {
 
   // Handler for Add to Cart button
   const handleAddToCart = () => {
-    if (currentDish) {
-      addToCart({
+    if (currentDish && isOnline) {
+      // Get customizations for this dish
+      const customizations = getDishCustomizations(currentDish.dishId);
+      
+      const cartItemId = addToCart({
         dishId: currentDish.dishId,
         dishName: currentDish.dishName,
         basePrice: currentDish.basePrice,
         restaurantId: restaurant.id,
-        restaurantName: restaurant.name
+        restaurantName: restaurant.name,
+        customizations: customizations
       });
+      
+      // Clear customizations for this dish after adding to cart
+      clearDishCustomizations(currentDish.dishId);
+      
+      // Show toast with undo option
+      showToast(
+        `${currentDish.dishName} added to cart!`,
+        'success',
+        5000,
+        () => {
+          // Undo function
+          removeCartItemById(cartItemId);
+          showToast('Item removed from cart', 'info', 2000);
+        }
+      );
     }
   };
+
+  // Check if buttons should be disabled
+  const isDisabled = !currentDish || !currentMedia || !isOnline;
 
   // Handler for hotspot click
   const handleHotspotClick = (ingredientId) => {
@@ -171,8 +205,10 @@ const RestaurantStory = ({ restaurant }) => {
                 src={currentMedia.url}
                 alt={currentDish.dishName}
                 className="w-full h-full object-cover"
+                onLoad={() => setIsMediaLoaded(true)}
                 onError={(e) => {
                   e.target.src = 'https://via.placeholder.com/800x1200/333333/ffffff?text=Image+Not+Found';
+                  setIsMediaLoaded(true); // Set loaded even on error so UI doesn't hang
                 }}
               />
             ) : (
@@ -183,22 +219,44 @@ const RestaurantStory = ({ restaurant }) => {
                 autoPlay
                 muted
                 loop={false}
+                onLoadedData={() => setIsMediaLoaded(true)}
+                onCanPlay={() => setIsMediaLoaded(true)}
                 onError={(e) => {
                   console.error('Video error:', e);
+                  setIsMediaLoaded(true); // Set loaded even on error so UI doesn't hang
                 }}
               />
             )}
             
-            {/* Hotspots */}
-            <Hotspots 
-              hotspots={currentMedia.hotspots} 
-              onHotspotClick={handleHotspotClick} 
-            />
+            {/* Hotspots - only render after media is loaded */}
+            {isMediaLoaded && (
+              <Hotspots 
+                hotspots={currentMedia.hotspots} 
+                onHotspotClick={handleHotspotClick}
+                dishId={currentDish.dishId}
+              />
+            )}
             
             {/* Dish Info Overlay */}
-            <div className="absolute bottom-32 left-0 right-0 px-4 text-white">
-              <h3 className="text-2xl font-bold mb-1">{currentDish.dishName}</h3>
-              <p className="text-lg">${currentDish.basePrice.toFixed(2)}</p>
+            <div className="absolute bottom-0 left-0 right-0  text-white z-10">
+              <div className="bg-gradient-to-t from-black/50 via-black/40 to-white/20 rounded-t-2xl p-5 backdrop-blur-sm pb-6">
+                <h3 className="text-3xl font-bold mb-2">{currentDish.dishName}</h3>
+                {currentDish.description && (
+                  <p className="text-sm text-white/90 mb-3 leading-relaxed line-clamp-2">
+                    {currentDish.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold">${currentDish.basePrice.toFixed(2)}</span>
+                  <span className="text-sm text-white/70">per serving</span>
+                </div>
+                 {/* Action Buttons */}
+                <ActionButtons 
+                  onCustomize={handleCustomize}
+                  onAddToCart={handleAddToCart}
+                  disabled={isDisabled}
+                />
+              </div>
             </div>
           </div>
         ) : (
@@ -211,17 +269,14 @@ const RestaurantStory = ({ restaurant }) => {
       {/* Ingredient Card Overlay */}
       <IngredientCard
         ingredient={selectedIngredient}
+        dish={currentDish}
         isOpen={isCardOpen}
         onClose={handleCloseCard}
         onCustomize={handleCustomize}
         onAddExtra={handleAddExtra}
       />
 
-      {/* Action Buttons */}
-      <ActionButtons 
-        onCustomize={handleCustomize}
-        onAddToCart={handleAddToCart}
-      />
+     
     </div>
   );
 };

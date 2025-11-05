@@ -1,3 +1,5 @@
+import biryaniVideo from '../assets/4912627-uhd_3840_2160_24fps.mp4';
+
 export const mockData = {
   "restaurants": [
     {
@@ -8,6 +10,7 @@ export const mockData = {
         {
           "dishId": "d1",
           "dishName": "Butter Chicken",
+          "description": "Tender chicken pieces simmered in a rich, creamy tomato-based curry with aromatic spices. Served with fragrant basmati rice and naan bread.",
           "basePrice": 9.99,
           "media": [
             {
@@ -18,7 +21,7 @@ export const mockData = {
               "hotspots": [
                 {
                   "id": "h1",
-                  "x": 0.35,
+                  "x": 0.85,
                   "y": 0.5,
                   "ingredientId": "i1"
                 },
@@ -32,6 +35,28 @@ export const mockData = {
             }
           ],
           "ingredients": [
+          {
+              "id": "i8",
+              "name": "Soft-Boiled Egg",
+              "image": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=200&h=200&fit=crop",
+              "nutrition": {
+                "calories": 150,
+                "protein_g": 12,
+                "carbs_g": 1,
+                "fat_g": 10
+              },
+              "allergens": ["Eggs"],
+              "customizable": true,
+              "quantity": 1,
+              "priceImpact": 0,
+              "substitutions": [
+                {
+                  "name": "Vegan Egg",
+                  "priceChange": 0.75,
+                  "id": "i5a"
+                }
+              ]
+            },
             {
               "id": "i1",
               "name": "Chicken",
@@ -103,6 +128,7 @@ export const mockData = {
         {
           "dishId": "d2",
           "dishName": "Paneer Tikka Masala",
+          "description": "Creamy and flavorful curry with grilled paneer cubes in a rich tomato-based sauce. Perfect for vegetarians, served with rice and naan.",
           "basePrice": 8.49,
           "media": [
             {
@@ -144,6 +170,84 @@ export const mockData = {
               ]
             }
           ]
+        },
+        {
+          "dishId": "d5",
+          "dishName": "Lamb Biryani",
+          "description": "Fragrant basmati rice layered with tender, slow-cooked lamb pieces, aromatic spices, and saffron. Served with raita and a hard-boiled egg. A true celebration of flavors.",
+          "basePrice": 14.99,
+          "media": [
+            {
+              "id": "m6",
+              "type": "video",
+              "url": biryaniVideo,
+              "hotspots": [
+                {
+                  "id": "h8",
+                  "x": 0.5,
+                  "y": 0.4,
+                  "ingredientId": "i9"
+                },
+                {
+                  "id": "h9",
+                  "x": 0.7,
+                  "y": 0.6,
+                  "ingredientId": "i10"
+                }
+              ]
+            }
+          ],
+          "ingredients": [
+            {
+              "id": "i9",
+              "name": "Lamb Pieces",
+              "image": "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=200&h=200&fit=crop",
+              "nutrition": {
+                "calories": 280,
+                "protein_g": 28,
+                "carbs_g": 0,
+                "fat_g": 18
+              },
+              "allergens": [],
+              "customizable": true,
+              "quantity": 1,
+              "priceImpact": 0,
+              "substitutions": [
+                {
+                  "name": "Chicken Pieces",
+                  "priceChange": -2.0,
+                  "id": "i9a"
+                },
+                {
+                  "name": "Vegetables",
+                  "priceChange": -3.0,
+                  "id": "i9b"
+                }
+              ]
+            },
+            {
+              "id": "i10",
+              "name": "Saffron Rice",
+              "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=200&h=200&fit=crop",
+              "nutrition": {
+                "calories": 200,
+                "protein_g": 4,
+                "carbs_g": 45,
+                "fat_g": 0.5
+              },
+              "allergens": [],
+              "customizable": true,
+              "quantity": 1,
+              "priceImpact": 0,
+              "substitutions": [
+                {
+                  "name": "Brown Rice",
+                  "priceChange": 0,
+                  "id": "i10a"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -155,6 +259,7 @@ export const mockData = {
         {
           "dishId": "d3",
           "dishName": "Ramen Bowl Deluxe",
+          "description": "Authentic Japanese ramen with rich, savory broth, perfectly cooked noodles, tender chashu pork, and a perfectly soft-boiled egg. A comforting bowl of pure satisfaction.",
           "basePrice": 12.5,
           "media": [
             {
@@ -228,6 +333,7 @@ export const mockData = {
         {
           "dishId": "d4",
           "dishName": "Sushi Platter",
+          "description": "Fresh, premium-grade salmon sushi expertly prepared by our master chefs. Each piece is a perfect balance of flavor and texture, served with wasabi and pickled ginger.",
           "basePrice": 15.99,
           "media": [
             {

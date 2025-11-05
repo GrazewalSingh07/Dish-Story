@@ -1,12 +1,20 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
+import CustomizationPanel from './CustomizationPanel';
+import { useCustomization } from '../context/CustomizationContext';
 
 const IngredientCard = ({ 
   ingredient, 
+  dish,
   isOpen, 
   onClose, 
   onCustomize, 
   onAddExtra 
 }) => {
+  const { getCustomization } = useCustomization();
+  const [showCustomizationPanel, setShowCustomizationPanel] = useState(false);
+  
+  const currentCustomization = dish && ingredient ? getCustomization(dish.dishId, ingredient.id) : null;
+  const hasSubstitution = currentCustomization?.substitution;
   const cardRef = useRef(null);
   const swipeStartY = useRef(null);
 
@@ -111,13 +119,32 @@ const IngredientCard = ({
             </div>
           )}
 
+          {/* Customization Indicator */}
+          {hasSubstitution && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm font-medium text-gray-900">
+                Customized: {hasSubstitution.name}
+              </p>
+              <p className="text-xs text-gray-600">
+                Price adjustment: {hasSubstitution.priceChange >= 0 ? '+' : ''}${hasSubstitution.priceChange.toFixed(2)}
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
             <button
-              onClick={onCustomize}
-              className="flex-1 bg-gray-900 hover:bg-gray-800 active:bg-gray-700 text-white font-semibold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg"
+              onClick={() => {
+                setShowCustomizationPanel(true);
+                onCustomize();
+              }}
+              className={`flex-1 font-semibold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg ${
+                hasSubstitution 
+                  ? 'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-white' 
+                  : 'bg-gray-900 hover:bg-gray-800 active:bg-gray-700 text-white'
+              }`}
             >
-              Customize
+              {hasSubstitution ? 'Change Customization' : 'Customize'}
             </button>
             <button
               onClick={onAddExtra}
@@ -128,6 +155,19 @@ const IngredientCard = ({
           </div>
         </div>
       </div>
+
+      {/* Customization Panel */}
+      {showCustomizationPanel && dish && ingredient && (
+        <CustomizationPanel
+          dish={dish}
+          ingredient={ingredient}
+          isOpen={showCustomizationPanel}
+          onClose={() => {
+            setShowCustomizationPanel(false);
+            onClose();
+          }}
+        />
+      )}
     </div>
   );
 };

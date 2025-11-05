@@ -8,6 +8,12 @@ export const useMediaNavigation = (onNavigate) => {
     const container = containerRef.current;
     if (!container) return;
 
+    // Ignore clicks on hotspots - they handle their own clicks
+    if (e.target.closest('[data-hotspot="true"]')) {
+      clickStartRef.current = null;
+      return;
+    }
+
     // Check if this was a drag (not a click)
     if (clickStartRef.current) {
       const moveDistance = Math.abs(
@@ -40,6 +46,11 @@ export const useMediaNavigation = (onNavigate) => {
   };
 
   const handleMouseDown = (e) => {
+    // Ignore clicks on hotspots - they handle their own clicks
+    if (e.target.closest('[data-hotspot="true"]')) {
+      clickStartRef.current = null;
+      return;
+    }
     // Only handle horizontal clicks, let vertical swipes pass through
     clickStartRef.current = { x: e.clientX, y: e.clientY };
     // Don't stop propagation - let vertical swipes bubble up to StoryFeed
@@ -66,6 +77,11 @@ export const useMediaNavigation = (onNavigate) => {
   };
 
   const handleTouchStart = (e) => {
+    // Ignore touches on hotspots - they handle their own touches
+    if (e.target.closest('[data-hotspot="true"]')) {
+      clickStartRef.current = null;
+      return;
+    }
     const touch = e.touches[0];
     clickStartRef.current = { x: touch.clientX, y: touch.clientY };
   };

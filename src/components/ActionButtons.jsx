@@ -1,24 +1,34 @@
 import React from 'react';
 
-const ActionButtons = ({ onCustomize, onAddToCart }) => {
+const ActionButtons = ({ onCustomize, onAddToCart, disabled = false }) => {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/80 via-black/60 to-transparent">
+    <div className="relative mt-4">
       <div className="flex gap-3">
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onCustomize();
+            if (!disabled) onCustomize();
           }}
-          className="flex-1 bg-white/20 hover:bg-white/30 text-white font-semibold py-3 px-4 rounded-lg backdrop-blur-sm transition-all"
+          disabled={disabled}
+          className={`flex-1 font-semibold py-3 px-4 rounded-lg backdrop-blur-sm transition-all ${
+            disabled 
+              ? 'bg-white/10 text-white/50 cursor-not-allowed' 
+              : 'bg-white/20 hover:bg-white/30 text-white cursor-pointer'
+          }`}
         >
           Customize
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onAddToCart();
+            if (!disabled) onAddToCart();
           }}
-          className="flex-1 bg-white text-black font-semibold py-3 px-4 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+          disabled={disabled}
+          className={`flex-1 font-semibold py-3 px-4 rounded-lg transition-all shadow-lg ${
+            disabled 
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+              : 'bg-white text-black hover:bg-gray-100 cursor-pointer'
+          }`}
         >
           Add to Cart
         </button>
