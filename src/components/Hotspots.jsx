@@ -26,10 +26,12 @@ const Hotspots = ({ hotspots, onHotspotClick, dishId }) => {
             onMouseDown={(e) => {
               e.stopPropagation();
               e.preventDefault();
+              e.nativeEvent.stopImmediatePropagation();
             }}
             onTouchStart={(e) => {
               e.stopPropagation();
               e.preventDefault();
+              e.nativeEvent.stopImmediatePropagation();
             }}
             onMouseUp={(e) => {
               e.stopPropagation();
@@ -42,6 +44,7 @@ const Hotspots = ({ hotspots, onHotspotClick, dishId }) => {
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
+              e.nativeEvent.stopImmediatePropagation();
               onHotspotClick(hotspot.ingredientId);
             }}
           >

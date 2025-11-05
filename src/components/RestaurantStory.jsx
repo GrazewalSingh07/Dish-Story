@@ -88,12 +88,15 @@ const RestaurantStory = ({ restaurant }) => {
     }
   });
 
-  // Progress hook (now can use isProgressPaused from ingredient card hook)
+  // Combine progress paused states (ingredient card OR customization panel)
+  const isProgressPausedCombined = isProgressPaused || isCustomizationPanelOpen;
+
+  // Progress hook (now can use combined paused state)
   const { progress, pauseProgress: pauseProgressHook } = useProgress(
     currentMedia,
     currentDishIndex,
     restaurant.stories.length,
-    isProgressPaused,
+    isProgressPausedCombined,
     videoRef,
     savedProgressRef
   );
@@ -108,12 +111,12 @@ const RestaurantStory = ({ restaurant }) => {
 
   // Auto-advance when progress completes
   useEffect(() => {
-    if (progress >= 100 && !isProgressPaused) {
+    if (progress >= 100 && !isProgressPausedCombined) {
       if (currentDishIndex < restaurant.stories.length - 1) {
         setCurrentDishIndex(prev => prev + 1);
       }
     }
-  }, [progress, currentDishIndex, restaurant.stories.length, isProgressPaused]);
+  }, [progress, currentDishIndex, restaurant.stories.length, isProgressPausedCombined]);
 
   const { getDishCustomizations, clearDishCustomizations } = useCustomization();
 
@@ -135,6 +138,14 @@ const RestaurantStory = ({ restaurant }) => {
   const handleCustomize = () => {
     if (currentDish) {
       setIsCustomizationPanelOpen(true);
+      // Pause progress when opening customization panel
+      if (pauseProgressRef.current) {
+        pauseProgressRef.current(progress);
+      }
+      // Pause video if playing
+      if (videoRef?.current && currentMedia?.type === 'video') {
+        videoRef.current.pause();
+      }
     }
   };
 
@@ -311,7 +322,13 @@ const RestaurantStory = ({ restaurant }) => {
       <DishCustomizationPanel
         dish={currentDish}
         isOpen={isCustomizationPanelOpen}
-        onClose={() => setIsCustomizationPanelOpen(false)}
+        onClose={() => {
+          setIsCustomizationPanelOpen(false);
+          // Resume video if it was playing
+          if (videoRef?.current && currentMedia?.type === 'video') {
+            videoRef.current.play();
+          }
+        }}
       />
      
     </div>

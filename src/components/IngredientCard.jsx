@@ -12,15 +12,20 @@ const IngredientCard = ({
 }) => {
   const { getCustomization } = useCustomization();
   const [showCustomizationPanel, setShowCustomizationPanel] = useState(false);
-  
-  const currentCustomization = dish && ingredient ? getCustomization(dish.dishId, ingredient.id) : null;
-  const hasSubstitution = currentCustomization?.substitution;
   const cardRef = useRef(null);
   const swipeStartY = useRef(null);
-
+  
+  // Early return if ingredient is not available (after all hooks are called)
   if (!isOpen || !ingredient) {
     return null;
   }
+  
+  const currentCustomization = dish && ingredient ? getCustomization(dish.dishId, ingredient.id) : null;
+  const hasSubstitution = currentCustomization?.substitution;
+  const hasCustomization = !!currentCustomization;
+  const baseQuantity = ingredient?.quantity || 1;
+  const currentQuantity = currentCustomization?.quantity || baseQuantity;
+  const quantityChanged = currentQuantity !== baseQuantity;
 
   const handleCardTouchStart = (e) => {
     swipeStartY.current = e.touches[0].clientY;
@@ -120,14 +125,44 @@ const IngredientCard = ({
           )}
 
           {/* Customization Indicator */}
-          {hasSubstitution && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm font-medium text-gray-900">
-                Customized: {hasSubstitution.name}
-              </p>
-              <p className="text-xs text-gray-600">
-                Price adjustment: {hasSubstitution.priceChange >= 0 ? '+' : ''}${hasSubstitution.priceChange.toFixed(2)}
-              </p>
+          {hasCustomization && (
+            <div className="mb-4 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+                <h4 className="text-sm font-bold text-gray-900">Modifications Made</h4>
+              </div>
+              
+              <div className="space-y-2">
+                {/* Quantity Change */}
+                {quantityChanged && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700">
+                      Quantity: <span className="font-semibold">{baseQuantity}</span> → <span className="font-semibold text-yellow-700">{currentQuantity}</span>
+                    </span>
+                  </div>
+                )}
+                
+                {/* Substitution */}
+                {hasSubstitution && (
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-700">
+                      Substituted: <span className="font-semibold">{ingredient.name}</span> → <span className="font-semibold text-yellow-700">{hasSubstitution.name}</span>
+                    </span>
+                  </div>
+                )}
+                
+                {/* Price Adjustment */}
+                {currentCustomization?.priceChange !== undefined && currentCustomization.priceChange !== 0 && (
+                  <div className="flex items-center justify-between pt-2 border-t border-yellow-200">
+                    <span className="text-sm font-medium text-gray-900">Total Price Impact:</span>
+                    <span className={`text-sm font-bold ${currentCustomization.priceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {currentCustomization.priceChange >= 0 ? '+' : ''}${currentCustomization.priceChange.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -139,12 +174,12 @@ const IngredientCard = ({
                 onCustomize();
               }}
               className={`flex-1 font-semibold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg ${
-                hasSubstitution 
+                hasCustomization 
                   ? 'bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-white' 
                   : 'bg-gray-900 hover:bg-gray-800 active:bg-gray-700 text-white'
               }`}
             >
-              {hasSubstitution ? 'Change Customization' : 'Customize'}
+              {hasCustomization ? 'Change Customization' : 'Customize'}
             </button>
             <button
               onClick={onAddExtra}

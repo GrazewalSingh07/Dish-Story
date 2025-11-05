@@ -22,12 +22,12 @@ export const CustomizationProvider = ({ children }) => {
     return customizations[key] || null;
   };
 
-  // Check if an ingredient is customized (has a non-null substitution)
+  // Check if an ingredient is customized (has any customization: substitution, quantity change, or removal)
   const isIngredientCustomized = (dishId, ingredientId) => {
     const key = `${dishId}_${ingredientId}`;
     const customization = customizations[key];
-    // Return true only if customization exists AND has a substitution
-    return !!(customization && customization.substitution);
+    // Return true if customization exists (has substitution, quantity change, or was removed)
+    return !!customization;
   };
 
   // Set customization for a dish ingredient

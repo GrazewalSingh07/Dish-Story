@@ -30,6 +30,12 @@ export const mockData = {
                   "x": 0.65,
                   "y": 0.45,
                   "ingredientId": "i2"
+                },
+                {
+                  "id": "h3",
+                  "x": 0.4,
+                  "y": 0.5,
+                  "ingredientId": "i8"
                 }
               ]
             }

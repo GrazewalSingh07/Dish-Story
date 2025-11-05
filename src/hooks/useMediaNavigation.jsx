@@ -9,7 +9,7 @@ export const useMediaNavigation = (onNavigate) => {
     if (!container) return;
 
     // Ignore clicks on hotspots - they handle their own clicks
-    if (e.target.closest('[data-hotspot="true"]')) {
+    if (e.target && e.target.closest && e.target.closest('[data-hotspot="true"]')) {
       clickStartRef.current = null;
       return;
     }
@@ -47,7 +47,7 @@ export const useMediaNavigation = (onNavigate) => {
 
   const handleMouseDown = (e) => {
     // Ignore clicks on hotspots - they handle their own clicks
-    if (e.target.closest('[data-hotspot="true"]')) {
+    if (e.target && e.target.closest && e.target.closest('[data-hotspot="true"]')) {
       clickStartRef.current = null;
       return;
     }
@@ -78,7 +78,7 @@ export const useMediaNavigation = (onNavigate) => {
 
   const handleTouchStart = (e) => {
     // Ignore touches on hotspots - they handle their own touches
-    if (e.target.closest('[data-hotspot="true"]')) {
+    if (e.target && e.target.closest && e.target.closest('[data-hotspot="true"]')) {
       clickStartRef.current = null;
       return;
     }
@@ -101,10 +101,21 @@ export const useMediaNavigation = (onNavigate) => {
 
   const handleTouchEnd = (e) => {
     if (clickStartRef.current) {
+      // Check if the touch ended on a hotspot
+      if (e.changedTouches && e.changedTouches[0]) {
+        const touch = e.changedTouches[0];
+        const elementAtTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (elementAtTouch && elementAtTouch.closest && elementAtTouch.closest('[data-hotspot="true"]')) {
+          clickStartRef.current = null;
+          return;
+        }
+      }
+      
       const touch = e.changedTouches[0];
       const syntheticEvent = {
         clientX: touch.clientX,
-        clientY: touch.clientY
+        clientY: touch.clientY,
+        target: e.target || document.elementFromPoint(touch.clientX, touch.clientY)
       };
       handleMediaClick(syntheticEvent);
     }

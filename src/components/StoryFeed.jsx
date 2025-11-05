@@ -109,10 +109,11 @@ const StoryFeed = () => {
     };
 
     // Add touch event listeners
-    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    // Use passive: false for touchstart to allow preventDefault on hotspots
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
     container.addEventListener('touchmove', onTouchMove, { passive: true });
-    container.addEventListener('touchend', onTouchEnd, { passive: true });
-    container.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    container.addEventListener('touchend', onTouchEnd, { passive: false });
+    container.addEventListener('touchcancel', onTouchEnd, { passive: false });
 
     // Add mouse event listeners
     container.addEventListener('mousedown', onMouseDown);
