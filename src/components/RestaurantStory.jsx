@@ -11,6 +11,8 @@ import ProgressBars from './ProgressBars';
 import Hotspots from './Hotspots';
 import IngredientCard from './IngredientCard';
 import ActionButtons from './ActionButtons';
+import VideoControls from './VideoControls';
+import DishCustomizationPanel from './DishCustomizationPanel';
 
 const RestaurantStory = ({ restaurant }) => {
   const { addToCart, removeCartItemById } = useCart();
@@ -18,6 +20,7 @@ const RestaurantStory = ({ restaurant }) => {
   const isOnline = useNetworkStatus();
   const [currentDishIndex, setCurrentDishIndex] = useState(0);
   const [isMediaLoaded, setIsMediaLoaded] = useState(false);
+  const [isCustomizationPanelOpen, setIsCustomizationPanelOpen] = useState(false);
   const videoRef = useRef(null);
   const savedProgressRef = useRef(0);
 
@@ -114,11 +117,25 @@ const RestaurantStory = ({ restaurant }) => {
 
   const { getDishCustomizations, clearDishCustomizations } = useCustomization();
 
+  // Calculate customization count and final price
+  const calculateDishPrice = () => {
+    if (!currentDish) return { count: 0, finalPrice: 0 };
+    
+    const customizations = getDishCustomizations(currentDish.dishId);
+    const count = customizations.length;
+    const totalAdjustments = customizations.reduce((sum, c) => sum + (c.priceChange || 0), 0);
+    const finalPrice = currentDish.basePrice + totalAdjustments;
+    
+    return { count, finalPrice };
+  };
+
+  const { count: customizationCount, finalPrice } = calculateDishPrice();
+
   // Handler for Customize button
   const handleCustomize = () => {
-    // TODO: Open customization panel
-    console.log('Customize dish:', currentDish.dishName);
-    // This will be implemented later with the customization bottom sheet
+    if (currentDish) {
+      setIsCustomizationPanelOpen(true);
+    }
   };
 
   // Handler for Add to Cart button
@@ -131,6 +148,7 @@ const RestaurantStory = ({ restaurant }) => {
         dishId: currentDish.dishId,
         dishName: currentDish.dishName,
         basePrice: currentDish.basePrice,
+        finalPrice: finalPrice,
         restaurantId: restaurant.id,
         restaurantName: restaurant.name,
         customizations: customizations
@@ -212,20 +230,24 @@ const RestaurantStory = ({ restaurant }) => {
                 }}
               />
             ) : (
-              <video
-                ref={videoRef}
-                src={currentMedia.url}
-                className="w-full h-full object-cover"
-                autoPlay
-                muted
-                loop={false}
-                onLoadedData={() => setIsMediaLoaded(true)}
-                onCanPlay={() => setIsMediaLoaded(true)}
-                onError={(e) => {
-                  console.error('Video error:', e);
-                  setIsMediaLoaded(true); // Set loaded even on error so UI doesn't hang
-                }}
-              />
+              <>
+                <video
+                  ref={videoRef}
+                  src={currentMedia.url}
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop={false}
+                  onLoadedData={() => setIsMediaLoaded(true)}
+                  onCanPlay={() => setIsMediaLoaded(true)}
+                  onError={(e) => {
+                    console.error('Video error:', e);
+                    setIsMediaLoaded(true); // Set loaded even on error so UI doesn't hang
+                  }}
+                />
+                {/* Video Controls */}
+                <VideoControls videoRef={videoRef} isCardOpen={isCardOpen} />
+              </>
             )}
             
             {/* Hotspots - only render after media is loaded */}
@@ -247,7 +269,14 @@ const RestaurantStory = ({ restaurant }) => {
                   </p>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">${currentDish.basePrice.toFixed(2)}</span>
+                  {customizationCount > 0 ? (
+                    <>
+                      <span className="text-lg line-through text-white/60">${currentDish.basePrice.toFixed(2)}</span>
+                      <span className="text-2xl font-bold">${finalPrice.toFixed(2)}</span>
+                    </>
+                  ) : (
+                    <span className="text-2xl font-bold">${currentDish.basePrice.toFixed(2)}</span>
+                  )}
                   <span className="text-sm text-white/70">per serving</span>
                 </div>
                  {/* Action Buttons */}
@@ -255,6 +284,8 @@ const RestaurantStory = ({ restaurant }) => {
                   onCustomize={handleCustomize}
                   onAddToCart={handleAddToCart}
                   disabled={isDisabled}
+                  customizationCount={customizationCount}
+                  finalPrice={finalPrice}
                 />
               </div>
             </div>
@@ -276,6 +307,12 @@ const RestaurantStory = ({ restaurant }) => {
         onAddExtra={handleAddExtra}
       />
 
+      {/* Dish Customization Panel */}
+      <DishCustomizationPanel
+        dish={currentDish}
+        isOpen={isCustomizationPanelOpen}
+        onClose={() => setIsCustomizationPanelOpen(false)}
+      />
      
     </div>
   );

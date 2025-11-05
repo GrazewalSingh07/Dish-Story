@@ -1,6 +1,14 @@
 import React from 'react';
 
-const ActionButtons = ({ onCustomize, onAddToCart, disabled = false }) => {
+const ActionButtons = ({ 
+  onCustomize, 
+  onAddToCart, 
+  disabled = false, 
+  customizationCount = 0,
+  finalPrice = 0 
+}) => {
+  const hasModifications = customizationCount > 0;
+  
   return (
     <div className="relative mt-4">
       <div className="flex gap-3">
@@ -30,7 +38,19 @@ const ActionButtons = ({ onCustomize, onAddToCart, disabled = false }) => {
               : 'bg-white text-black hover:bg-gray-100 cursor-pointer'
           }`}
         >
-          Add to Cart
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="leading-tight">Add to Cart</span>
+            {hasModifications && (
+              <span className="text-xs font-medium text-gray-600 leading-tight">
+                {customizationCount} {customizationCount === 1 ? 'modification' : 'modifications'} • ${finalPrice.toFixed(2)}
+              </span>
+            )}
+            {!hasModifications && (
+              <span className="text-xs font-medium text-gray-600 leading-tight">
+                ${finalPrice.toFixed(2)}
+              </span>
+            )}
+          </div>
         </button>
       </div>
     </div>

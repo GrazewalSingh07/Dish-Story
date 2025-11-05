@@ -33,14 +33,19 @@ export const CustomizationProvider = ({ children }) => {
   // Set customization for a dish ingredient
   const setCustomization = (dishId, ingredientId, customization) => {
     const key = `${dishId}_${ingredientId}`;
-    setCustomizations(prev => ({
-      ...prev,
-      [key]: {
-        ...customization,
-        dishId,
-        ingredientId
-      }
-    }));
+    // If quantity is 0 or removed, remove the customization
+    if (customization.quantity === 0 || customization.removed) {
+      removeCustomization(dishId, ingredientId);
+    } else {
+      setCustomizations(prev => ({
+        ...prev,
+        [key]: {
+          ...customization,
+          dishId,
+          ingredientId
+        }
+      }));
+    }
   };
 
   // Remove customization
